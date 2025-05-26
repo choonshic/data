@@ -11,7 +11,7 @@ def load_data():
 
 df = load_data()
 df['dollar_price'] = df['local_price'] / df['dollar_ex']
-
+df = df[df['dollar_price'] < 20]
 st.title("🍔 Big Mac Index 물가 비교기")
 
 # ---------------------------------------
