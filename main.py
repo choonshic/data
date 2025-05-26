@@ -25,14 +25,47 @@ year = st.selectbox("📅 연도 선택", sorted(df['date'].unique(), reverse=Tr
 default_country = "South Korea" if "South Korea" in df['name'].unique() else sorted(df['name'].unique())[0]
 base_country = st.selectbox("📌 기준 국가 선택", sorted(df['name'].unique()), index=sorted(df['name'].unique()).index(default_country))
 
-# 데이터 필터링
-df_year = df[df['date'] == year]
+# -------------------------------
+# 1️⃣ 가장 비싼/싼 나라 10개 출력
+# -------------------------------
+df_year = df[df['date'] == year].copy()
+df_year = df_year[['name', 'dollar_price']].dropna()
+
+top10_expensive = df_year.sort_values(by='dollar_price', ascending=False).head(10)
+top10_cheap = df_year.sort_values(by='dollar_price').head(10)
+
+st.subheader(f"💸 {year}년 가장 비싼 국가 TOP 10")
+st.dataframe(top10_expensive.set_index('name').rename(columns={'dollar_price': 'Big Mac (USD)'}))
+
+st.subheader(f"🪙 {year}년 가장 저렴한 국가 TOP 10")
+st.dataframe(top10_cheap.set_index('name').rename(columns={'dollar_price': 'Big Mac (USD)'}))
+
+# -------------------------------
+# 2️⃣ 한국의 가격 추이 시각화
+# -------------------------------
+south_korea = df[df['name'] == "South Korea"].copy()
+south_korea = south_korea[['date', 'dollar_price']].dropna()
+south_korea = south_korea.sort_values('date')
+
+st.subheader("📈 한국의 Big Mac 가격 변화 추이 (USD 기준)")
+fig_kor = px.line(
+    south_korea,
+    x='date',
+    y='dollar_price',
+    markers=True,
+    title="South Korea Big Mac 가격 추이",
+    labels={'date': '연도', 'dollar_price': '가격 (USD)'}
+)
+fig_kor.update_layout(height=500)
+st.plotly_chart(fig_kor, use_container_width=True)
+
+# -------------------------------
+# 기준 국가 대비 다른 국가 비교
+# -------------------------------
 df_base = df_year[df_year['name'] == base_country]
 
-# 시각화
 if not df_base.empty:
     base_price = df_base['dollar_price'].values[0]
-    df_year = df_year.copy()
     df_year['price_ratio'] = df_year['dollar_price'] / base_price
     df_year['valuation'] = (df_year['price_ratio'] - 1) * 100
 
@@ -44,9 +77,10 @@ if not df_base.empty:
         color_continuous_scale='RdBu',
         labels={'name': '국가', 'valuation': '기준 대비 가격 차이 (%)'},
         title=f"{year}년 Big Mac USD 가격 비교 (기준: {base_country})",
-        height=700  # 그래프 크기 키움
+        height=700
     )
-    fig.update_layout(xaxis_tickangle=-45)  # 국가 이름이 겹치지 않게 회전
+    fig.update_layout(xaxis_tickangle=-45)
+    st.subheader(f"🌍 {year}년 Big Mac 가격 비교")
     st.plotly_chart(fig, use_container_width=True)
 else:
-    st.warning("해당 국가 데이터가 없습니다.")
+    st.warning(f"{base_country}에 대한 데이터가 없습니다.")
