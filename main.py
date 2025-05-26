@@ -43,21 +43,23 @@ st.dataframe(top10_cheap.set_index('name').rename(columns={'dollar_price': 'Big 
 # -------------------------------
 # 2️⃣ 한국의 가격 추이 시각화
 # -------------------------------
+# 2️⃣ 한국의 가격 추이 시각화 (local_price로 변경)
 south_korea = df[df['name'] == "South Korea"].copy()
-south_korea = south_korea[['date', 'dollar_price']].dropna()
+south_korea = south_korea[['date', 'local_price']].dropna()
 south_korea = south_korea.sort_values('date')
 
-st.subheader("📈 한국의 Big Mac 가격 변화 추이 (USD 기준)")
+st.subheader("📈 한국의 Big Mac 가격 변화 추이 (현지 통화 기준)")
 fig_kor = px.line(
     south_korea,
     x='date',
-    y='dollar_price',
+    y='local_price',
     markers=True,
-    title="South Korea Big Mac 가격 추이",
-    labels={'date': '연도', 'dollar_price': '가격 (USD)'}
+    title="South Korea Big Mac 가격 추이 (Local Currency)",
+    labels={'date': '연도', 'local_price': '가격 (현지 통화)'}
 )
 fig_kor.update_layout(height=500)
 st.plotly_chart(fig_kor, use_container_width=True)
+
 
 # -------------------------------
 # 기준 국가 대비 다른 국가 비교
